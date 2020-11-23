@@ -82,12 +82,20 @@ void main() {
 
 Some little adjustements of the .blend must be done:
 1. Limit the maximum number of bones influencing each vertex to 2! (reduce from 4 to 2)
+![Limit the number of bones influencing a vertex](https://github.com/bmatthieu3/rib/blob/master/misc/weights.png)
 2. Select the animation you want to export in the Action Editor of blender
 3. Select the mesh you want to export with its skeleton attached
 3. Export to collada file (.dae)
     1. In the **Main** tab. OpenGL's up vector is the Y axis but blender's one is Z. Check the apply box with X as the forward axis and Y as the up axis.
+    
+    ![change up axis](https://github.com/bmatthieu3/rib/blob/master/misc/main.png)
     2. In **Geom** tab, check the Triangulate box.
+    
+    ![enable triangulation](https://github.com/bmatthieu3/rib/blob/master/misc/geom.png)
+    
     3. In **Anim** tab, check Include Animations, Keep Keyframes, All Keyed Curves, Include all Actions. Set a very big Sampling Rate because rib needs only the keyframes (sampling is done inside of rib by specifying a sampling rate when loading the file). This prevents your collada files to get huge too!
+
+![anim options](https://github.com/bmatthieu3/rib/blob/master/misc/anim.png)
 
 After that, simply load the directory containing all your DAE files with rib. Each .dae will contain one animation. For the moment it is not possible to export multiple animations inside only ONE collada file because the Blender collada export does not recognize the actions stack from Blender. That is why a fix can be to:
 1. Export one animation per file
