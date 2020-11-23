@@ -1,29 +1,27 @@
 extern crate nalgebra as na;
 
-mod transform;
-mod skeleton;
 mod animation;
+mod skeleton;
+mod transform;
 mod utils;
 mod vertices;
 
-pub use vertices::Vertices;
 pub use animation::Animations;
+pub use vertices::Vertices;
 
-use na::{Point3, Vector3, Point2};
+use na::{Point2, Point3, Vector3};
 use std::io;
 use std::path::Path;
 #[derive(Debug)]
 pub enum Error {
-    OpenFile {
-        path: String,
-    },
+    OpenFile { path: String },
     EmptyFile,
     PrimitiveNotTriangles,
     SkeletonNotEqual,
     VerticesNotEqual,
     IoError(io::Error),
     Serialize(Box<bincode::ErrorKind>),
-    Deserialize(Box<bincode::ErrorKind>)
+    Deserialize(Box<bincode::ErrorKind>),
 }
 
 impl<'a> From<io::Error> for Error {
@@ -31,15 +29,20 @@ impl<'a> From<io::Error> for Error {
         Error::IoError(e)
     }
 }
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Data {
     pub vertices: Vertices,
     pub animations: Option<Animations>,
 }
 
-pub fn load<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(dirname: &'a P, fps: f32) -> Result<Data, Error> {
-    let filenames = dirname.as_ref().read_dir()?
+pub fn load<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(
+    dirname: &'a P,
+    fps: f32,
+) -> Result<Data, Error> {
+    let filenames = dirname
+        .as_ref()
+        .read_dir()?
         .into_iter()
         .filter_map(|p| {
             if let Ok(entry) = p {
@@ -60,21 +63,22 @@ pub fn load<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(dirname: &'a P, fps: f32)
         })
         .collect::<Vec<_>>();
 
-    let docs: Result<Vec<_>, _> = filenames.iter().map(|f| {
-            collada::document::ColladaDocument::from_path(f)
-                .map_err(|_| {
-                    Error::OpenFile {
-                        path: f.to_str().unwrap().to_owned()
-                    }
-                })
-        }).collect();
+    let docs: Result<Vec<_>, _> = filenames
+        .iter()
+        .map(|f| {
+            collada::document::ColladaDocument::from_path(f).map_err(|_| Error::OpenFile {
+                path: f.to_str().unwrap().to_owned(),
+            })
+        })
+        .collect();
     let docs = docs?;
-    let frame_time = 1.0/fps;
+    let frame_time = 1.0 / fps;
 
-    let res: Result<Vec<_>, _> = docs.into_iter().zip(filenames.iter())
-        .map(|(doc, filename)| {
-            parse_collada_doc(filename, doc, frame_time)
-        }).collect();
+    let res: Result<Vec<_>, _> = docs
+        .into_iter()
+        .zip(filenames.iter())
+        .map(|(doc, filename)| parse_collada_doc(filename, doc, frame_time))
+        .collect();
     let mut data = res?;
 
     // Check wheter the vertices and skeleton between files are equal
@@ -103,30 +107,36 @@ pub fn load<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(dirname: &'a P, fps: f32)
 
     // The vertices and skeleton correspond
     // Therefore we can append the animations
-    let Data { vertices, animations} = data.remove(0);
+    let Data {
+        vertices,
+        animations,
+    } = data.remove(0);
     if let Some(mut animations) = animations {
-        
         for d in data.into_iter() {
             animations.append(d.animations.unwrap());
         }
-    
+
         let data = Data {
             animations: Some(animations),
-            vertices
+            vertices,
         };
-    
+
         Ok(data)
     } else {
         // All the files do not contain any animations
         // and contain the same vertices
         Ok(Data {
             vertices,
-            animations: None
+            animations: None,
         })
     }
 }
 
-fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(path: &'a P, doc: collada::document::ColladaDocument, frame_time: f32) -> Result<Data, Error> {
+fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(
+    path: &'a P,
+    doc: collada::document::ColladaDocument,
+    frame_time: f32,
+) -> Result<Data, Error> {
     if let Some(obj_set) = doc.get_obj_set() {
         let object = obj_set.objects.first().ok_or(Error::EmptyFile)?;
 
@@ -152,7 +162,12 @@ fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(path: &'a P, doc
             let mut cur_idx_weights: Vec<usize> = vec![0; p.len()];
 
             // Retrieve the inverse bind poses of that object
-            for collada::VertexWeight { vertex, joint, weight } in &bind_data.vertex_weights {
+            for collada::VertexWeight {
+                vertex,
+                joint,
+                weight,
+            } in &bind_data.vertex_weights
+            {
                 let cur_idx = &mut cur_idx_weights[*vertex];
 
                 let weight = bind_data.weights[*weight];
@@ -172,7 +187,7 @@ fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(path: &'a P, doc
             (w, b)
         } else {
             (vec![], vec![])
-        };          
+        };
 
         for geometry in &object.geometry {
             for primitive in &geometry.mesh {
@@ -185,13 +200,40 @@ fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(path: &'a P, doc
                         assert_eq!(positions_idx.len(), texcoords_idx.len());
 
                         let mut idx = 0;
-                        for (&vertex_idx, (&normal_idx, &tx_idx))  in positions_idx.iter().zip(normals_idx.iter().zip(texcoords_idx.iter())) {
-                            positions.push(Point3::new(p[vertex_idx.0].x as f32, p[vertex_idx.0].y as f32, p[vertex_idx.0].z as f32));
-                            positions.push(Point3::new(p[vertex_idx.1].x as f32, p[vertex_idx.1].y as f32, p[vertex_idx.1].z as f32));
-                            positions.push(Point3::new(p[vertex_idx.2].x as f32, p[vertex_idx.2].y as f32, p[vertex_idx.2].z as f32));
-                            normals.push(Vector3::new(n[normal_idx.0].x as f32, n[normal_idx.0].y as f32, n[normal_idx.0].z as f32));
-                            normals.push(Vector3::new(n[normal_idx.1].x as f32, n[normal_idx.1].y as f32, n[normal_idx.1].z as f32));
-                            normals.push(Vector3::new(n[normal_idx.2].x as f32, n[normal_idx.2].y as f32, n[normal_idx.2].z as f32));
+                        for (&vertex_idx, (&normal_idx, &tx_idx)) in positions_idx
+                            .iter()
+                            .zip(normals_idx.iter().zip(texcoords_idx.iter()))
+                        {
+                            positions.push(Point3::new(
+                                p[vertex_idx.0].x as f32,
+                                p[vertex_idx.0].y as f32,
+                                p[vertex_idx.0].z as f32,
+                            ));
+                            positions.push(Point3::new(
+                                p[vertex_idx.1].x as f32,
+                                p[vertex_idx.1].y as f32,
+                                p[vertex_idx.1].z as f32,
+                            ));
+                            positions.push(Point3::new(
+                                p[vertex_idx.2].x as f32,
+                                p[vertex_idx.2].y as f32,
+                                p[vertex_idx.2].z as f32,
+                            ));
+                            normals.push(Vector3::new(
+                                n[normal_idx.0].x as f32,
+                                n[normal_idx.0].y as f32,
+                                n[normal_idx.0].z as f32,
+                            ));
+                            normals.push(Vector3::new(
+                                n[normal_idx.1].x as f32,
+                                n[normal_idx.1].y as f32,
+                                n[normal_idx.1].z as f32,
+                            ));
+                            normals.push(Vector3::new(
+                                n[normal_idx.2].x as f32,
+                                n[normal_idx.2].y as f32,
+                                n[normal_idx.2].z as f32,
+                            ));
                             texcoords.push(Point2::new(t[tx_idx.0].x as f32, t[tx_idx.0].y as f32));
                             texcoords.push(Point2::new(t[tx_idx.1].x as f32, t[tx_idx.1].y as f32));
                             texcoords.push(Point2::new(t[tx_idx.2].x as f32, t[tx_idx.2].y as f32));
@@ -210,10 +252,8 @@ fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(path: &'a P, doc
                             indices.extend([idx, idx + 1, idx + 2].iter());
                             idx += 3;
                         }
-                    },
-                    _ => {
-                        return Err(Error::PrimitiveNotTriangles)
                     }
+                    _ => return Err(Error::PrimitiveNotTriangles),
                 }
             }
         }
@@ -224,12 +264,15 @@ fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(path: &'a P, doc
             texcoords,
             bone_ids,
             weights,
-            indices
+            indices,
         };
 
         if let Some(name) = path.as_ref().file_stem() {
             let animations = Animations::new(name.to_str().unwrap(), &doc, frame_time);
-            Ok(Data { vertices, animations })
+            Ok(Data {
+                vertices,
+                animations,
+            })
         } else {
             Err(Error::EmptyFile)
         }
@@ -241,8 +284,7 @@ fn parse_collada_doc<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(path: &'a P, doc
 pub fn write<P: AsRef<Path>>(data: &Data, path: P) -> Result<(), Error> {
     let mut buffer = BufWriter::new(File::create(path)?);
 
-    let encoded: Vec<u8> = bincode::serialize(data)
-        .map_err(Error::Serialize)?;
+    let encoded: Vec<u8> = bincode::serialize(data).map_err(Error::Serialize)?;
 
     buffer.write_all(&encoded)?;
     buffer.flush()?;
@@ -256,13 +298,12 @@ pub fn read<P: AsRef<Path>>(filename: P) -> Result<Data, Error> {
     let mut data = Vec::new();
     f.read_to_end(&mut data)?;
 
-    let decoded = bincode::deserialize(&data[..])
-        .map_err(Error::Deserialize)?;
+    let decoded = bincode::deserialize(&data[..]).map_err(Error::Deserialize)?;
 
     Ok(decoded)
 }
-use std::io::BufWriter;
 use std::fs::File;
+use std::io::BufWriter;
 use std::io::Write;
 
 use std::io::Read;

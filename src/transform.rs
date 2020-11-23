@@ -1,6 +1,5 @@
-use na::{Vector3, Quaternion, Matrix4, UnitQuaternion};
-#[derive(PartialEq, Clone)]
-#[derive(Debug)]
+use na::{Matrix4, Quaternion, UnitQuaternion, Vector3};
+#[derive(PartialEq, Clone, Debug)]
 pub struct Transform {
     // Translation vector
     t: Vector3<f32>,
@@ -17,15 +16,15 @@ fn quat_from_mat4(m: &Matrix4<f32>) -> UnitQuaternion<f32> {
             0.25 / s,
             (m[(2, 1)] - m[(1, 2)]) * s,
             (m[(0, 2)] - m[(2, 0)]) * s,
-            (m[(1, 0)] - m[(0, 1)]) * s
+            (m[(1, 0)] - m[(0, 1)]) * s,
         ]
     } else if m[(0, 0)] > m[(1, 1)] && m[(0, 0)] > m[(2, 2)] {
         let s = 2.0 * (1.0 + m[(0, 0)] - m[(1, 1)] - m[(2, 2)]).sqrt();
         [
-            (m[(2, 1)] - m[(1, 2)] ) / s,
+            (m[(2, 1)] - m[(1, 2)]) / s,
             0.25 * s,
             (m[(0, 1)] + m[(1, 0)]) / s,
-            (m[(0, 2)] + m[(2, 0)]) / s
+            (m[(0, 2)] + m[(2, 0)]) / s,
         ]
     } else if m[(1, 1)] > m[(2, 2)] {
         let s = 2.0 * (1.0 + m[(1, 1)] - m[(0, 0)] - m[(2, 2)]).sqrt();
@@ -33,7 +32,7 @@ fn quat_from_mat4(m: &Matrix4<f32>) -> UnitQuaternion<f32> {
             (m[(0, 2)] - m[(2, 0)]) / s,
             (m[(0, 1)] + m[(1, 0)]) / s,
             0.25 * s,
-            (m[(1, 2)] + m[(2, 1)]) / s
+            (m[(1, 2)] + m[(2, 1)]) / s,
         ]
     } else {
         let s = 2.0 * (1.0 + m[(2, 2)] - m[(0, 0)] - m[(1, 1)]).sqrt();
@@ -41,7 +40,7 @@ fn quat_from_mat4(m: &Matrix4<f32>) -> UnitQuaternion<f32> {
             (m[(1, 0)] - m[(0, 1)]) / s,
             (m[(0, 2)] + m[(2, 0)]) / s,
             (m[(1, 2)] + m[(2, 1)]) / s,
-            0.25 * s
+            0.25 * s,
         ]
     };
 
@@ -52,10 +51,7 @@ impl From<&Matrix4<f32>> for Transform {
     fn from(m: &Matrix4<f32>) -> Self {
         let r = quat_from_mat4(m);
         let t = Vector3::<f32>::new(m[(0, 3)], m[(1, 3)], m[(2, 3)]);
-        Transform {
-            t,
-            r,
-        }
+        Transform { t, r }
     }
 }
 
@@ -93,9 +89,6 @@ impl Transform {
         // Spherical interpolation between the rotation parts
         let r = self.r.slerp(&rhs.r, alpha);
 
-        Transform {
-            t,
-            r
-        }
+        Transform { t, r }
     }
 }

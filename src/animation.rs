@@ -1,20 +1,16 @@
-
-
-use std::collections::HashMap;
 use na::Matrix4;
+use std::collections::HashMap;
 
-use serde::{Serialize, Deserialize};
 use super::transform::Transform;
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
+use serde::{Deserialize, Serialize};
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct Keyframe {
     // The transform matrix of each bone per each keyframe
     //pub bone_transforms: HashMap<String, Transform>,
     //pub bone_transforms: HashMap<String, Transform>,
     pub transforms: Vec<Matrix4<f32>>,
     // Times when each keyframe begins. Of size Nkeyframe
-    pub start_time: f32
+    pub start_time: f32,
 }
 
 impl PartialEq for Keyframe {
@@ -24,11 +20,22 @@ impl PartialEq for Keyframe {
 }
 
 impl Keyframe {
-    fn new(skeleton: &Skeleton, bone_animations: &[collada::Animation], start_time: f32, idx_keyframe: usize, alpha: f32) -> Self {
+    fn new(
+        skeleton: &Skeleton,
+        bone_animations: &[collada::Animation],
+        start_time: f32,
+        idx_keyframe: usize,
+        alpha: f32,
+    ) -> Self {
         let mut local_transforms = HashMap::with_capacity(bone_animations.len());
         let global_inverse_transform = Matrix4::identity();
 
-        for collada::Animation { target, sample_poses, .. } in bone_animations.iter() {
+        for collada::Animation {
+            target,
+            sample_poses,
+            ..
+        } in bone_animations.iter()
+        {
             //let aa = dbg!(sample_poses.len());
 
             // Skip bones that are not referred by bind_data
@@ -46,16 +53,17 @@ impl Keyframe {
             local_transforms.insert(bone_name.to_string(), t);
         }
 
-        let transforms = compute_final_transforms(skeleton, &local_transforms, &global_inverse_transform);
+        let transforms =
+            compute_final_transforms(skeleton, &local_transforms, &global_inverse_transform);
         //unreachable!();
         Keyframe {
             transforms,
-            start_time
+            start_time,
         }
     }
 }
 
-use std::cmp::{PartialOrd, Ordering};
+use std::cmp::{Ordering, PartialOrd};
 
 impl PartialOrd for Keyframe {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
@@ -63,8 +71,7 @@ impl PartialOrd for Keyframe {
     }
 }
 
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Animation {
     /// The duration of an animation
     duration: f32,
@@ -73,7 +80,11 @@ pub struct Animation {
     frame_time: f32,
 }
 impl Animation {
-    pub fn new(skeleton: &Skeleton, bone_animations: Vec<collada::Animation>, frame_time: f32) -> Self {
+    pub fn new(
+        skeleton: &Skeleton,
+        bone_animations: Vec<collada::Animation>,
+        frame_time: f32,
+    ) -> Self {
         let duration = {
             let first_anim_j = bone_animations.first().unwrap();
 
@@ -89,7 +100,7 @@ impl Animation {
         let mut end_time_keyframe = first_bone_animation.sample_times[1];
 
         //let duration = (num_frames as f32) * FRAME_TIME;
-        let mut keys =  Vec::new();
+        let mut keys = Vec::new();
 
         //let mut frame_idx = 0;
         let mut time = 0.0;
@@ -119,13 +130,13 @@ impl Animation {
             &bone_animations,
             duration,
             idx_keyframe,
-            1.0
+            1.0,
         ));
 
         Animation {
             duration,
             keys,
-            frame_time
+            frame_time,
         }
     }
 
@@ -144,7 +155,7 @@ impl Animation {
             // Binary search on keyframe starting times
             let num_step = utils::log_2(self.keys.len() as i32);
             let mut i = self.keys.len() >> 1;
-            
+
             let mut a = 0;
             let mut b = num_keyframes - 1;
 
@@ -187,11 +198,18 @@ fn compute_final_transforms(
     skeleton: &Skeleton,
     bone_local_transforms: &HashMap<String, Matrix4<f32>>,
     global_inverse_transform: &Matrix4<f32>,
-) -> Vec<Matrix4<f32>>{
+) -> Vec<Matrix4<f32>> {
     let root = skeleton.get_root().as_ref().unwrap();
 
     let mut transforms = vec![Matrix4::identity(); skeleton.get_num_vertices_attached_bones()];
-    recursive_final_transforms(skeleton, &root, &Matrix4::identity(), dbg!(bone_local_transforms), global_inverse_transform, &mut transforms);
+    recursive_final_transforms(
+        skeleton,
+        &root,
+        &Matrix4::identity(),
+        dbg!(bone_local_transforms),
+        global_inverse_transform,
+        &mut transforms,
+    );
     transforms
 }
 fn recursive_final_transforms(
@@ -201,7 +219,7 @@ fn recursive_final_transforms(
     bone_local_transforms: &HashMap<String, Matrix4<f32>>,
     global_inverse_transform: &Matrix4<f32>,
 
-    final_transforms: &mut Vec<Matrix4<f32>>
+    final_transforms: &mut Vec<Matrix4<f32>>,
 ) {
     let name = bone.get_name(skeleton);
 
@@ -209,7 +227,8 @@ fn recursive_final_transforms(
     let local_transform = parent_transform * bone_local_transform;
 
     if bone.has_vertices_attached() {
-        let final_transform = global_inverse_transform * local_transform * bone.get_inverse_bind_pose();
+        let final_transform =
+            global_inverse_transform * local_transform * bone.get_inverse_bind_pose();
 
         let idx_transform = bone.idx_transform.unwrap();
         final_transforms[idx_transform] = final_transform;
@@ -217,13 +236,19 @@ fn recursive_final_transforms(
 
     if let Some(children) = bone.get_children() {
         for child in children {
-            recursive_final_transforms(skeleton, child, &local_transform, bone_local_transforms, global_inverse_transform, final_transforms);
+            recursive_final_transforms(
+                skeleton,
+                child,
+                &local_transform,
+                bone_local_transforms,
+                global_inverse_transform,
+                final_transforms,
+            );
         }
     }
 }
 
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Animations {
     anims: HashMap<String, Animation>,
 
@@ -236,7 +261,11 @@ use super::skeleton::{Bone, Skeleton};
 }*/
 
 impl Animations {
-    pub fn new(name: &str, doc: &collada::document::ColladaDocument, frame_time: f32) -> Option<Self> {
+    pub fn new(
+        name: &str,
+        doc: &collada::document::ColladaDocument,
+        frame_time: f32,
+    ) -> Option<Self> {
         if let Some(skeleton) = Skeleton::from(doc) {
             if let Some(animations) = doc.get_animations() {
                 // If the skeleton and animations are defined, therefore there is a bind data associated to it
@@ -251,7 +280,7 @@ impl Animations {
                         let new_name_anim = extract_anim_name_from_target(&anim.target).to_string();
                         if new_name_anim != cur_name {
                             let cur_anims = cur_targets_in_anim.drain(..).collect();
-                            let res = 
+                            let res =
                             anims.insert(cur_name, res);
 
                             cur_name_anim = Some(new_name_anim);
@@ -272,12 +301,7 @@ impl Animations {
                 let mut anims = HashMap::new();
                 anims.insert(name.to_string(), anim);
 
-                Some(
-                    Animations {
-                        anims,
-                        skeleton,
-                    }
-                )
+                Some(Animations { anims, skeleton })
             } else {
                 None
             }

@@ -5,9 +5,8 @@ type Index = u32;
 type Weight = f32;
 type BoneIdx = i32;
 
-use serde::{Serialize, Deserialize};
-#[derive(Serialize, Deserialize)]
-#[derive(PartialEq)]
+use serde::{Deserialize, Serialize};
+#[derive(Serialize, Deserialize, PartialEq)]
 pub struct Vertices {
     pub positions: Vec<Position>,
     pub normals: Vec<Normal>,

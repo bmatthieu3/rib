@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
-#[derive(PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Skeleton {
     root: Option<Bone>,
     joint_names: Vec<String>,
@@ -21,7 +19,7 @@ impl Skeleton {
         }
     }
 
-    /// Parse the first skeleton 
+    /// Parse the first skeleton
     pub fn from(doc: &collada::document::ColladaDocument) -> Option<Skeleton> {
         if let Some(skeletons) = &doc.get_skeletons() {
             if let Some(skeleton) = skeletons.first() {
@@ -38,24 +36,28 @@ impl Skeleton {
                         } else {
                             Some(joint.parent_index as usize)
                         };
-                        let bind_data_joint_idx = bind_data.joint_names.iter().position(|name| {
-                            let aa = bind_data.skeleton_name.as_ref().unwrap().replace(" ", "_");
-                            let bind_data_name = format!("{}_{}", aa, name);
-                            bind_data_name == joint.name
-                        });
+                        let bind_data_joint_idx =
+                            bind_data.joint_names.iter().position(|joint_name| {
+                                let skeleton_name =
+                                    bind_data.skeleton_name.as_ref().unwrap().replace(" ", "_");
+                                let bind_data_name = format!("{}_{}", skeleton_name, joint_name);
+                                bind_data_name == joint.name
+                            });
                         let mut vertices_attached = false;
                         let mut idx_transform = None;
-                        let inverse_bind_pose = if let Some(bind_data_joint_idx) = bind_data_joint_idx {
-                            let inverse_bind_pose = bind_data.inverse_bind_poses[bind_data_joint_idx];
-                            prev_inv_bind_pose = inverse_bind_pose;
-                            vertices_attached = true;
-                            idx_transform = Some(bind_data_joint_idx);
+                        let inverse_bind_pose =
+                            if let Some(bind_data_joint_idx) = bind_data_joint_idx {
+                                let inverse_bind_pose =
+                                    bind_data.inverse_bind_poses[bind_data_joint_idx];
+                                prev_inv_bind_pose = inverse_bind_pose;
+                                vertices_attached = true;
+                                idx_transform = Some(bind_data_joint_idx);
 
-                            inverse_bind_pose
-                        } else {
-                            prev_inv_bind_pose
-                            //Matrix4::identity().into()
-                        };
+                                inverse_bind_pose
+                            } else {
+                                prev_inv_bind_pose
+                                //Matrix4::identity().into()
+                            };
                         /*let bind_data_name = format!("{}_{}", bind_data.skeleton_name.as_ref().unwrap(), bind_data.joint_names[bind_joint_idx]);
                         let bind_data_name = dbg!(bind_data_name.replace(" ", "_"));
                         let inverse_bind_pose = if joint.name == bind_data_name {
@@ -74,7 +76,7 @@ impl Skeleton {
                             parent_idx,
                             to_matrix4(&inverse_bind_pose),
                             vertices_attached,
-                            idx_transform
+                            idx_transform,
                         );
                         let name = joint.name.to_string();
                         s.add(name, bone);
@@ -85,36 +87,36 @@ impl Skeleton {
                     None
                 }
 
-                /*if let Some(parent_name) = &parent_name {
-                    // The bone has a parent
-                    let bone = Bone::new(name, Some(parent_name.clone()), to_matrix4(&inverse_bind_pose));
-                    // keep trace of the parent bone hierarchy
-                    let mut bones_stack = vec![bone];
-                    let mut cur_parent =  &s.joints[j.parent_index as usize];
-                    while !skeleton.contains(&cur_parent.name) {
-                        let parent_index = cur_parent.parent_index as usize;
-                        let parent_name = if parent_index == 255 {
-                            None
-                        } else {
-                            let parent_j = &s.joints[parent_index];
-                            Some(parent_j.name.clone())
-                        };
-                        let inverse_bind_pose_parent = to_matrix4(&bind_data.inverse_bind_poses[parent_index]);
-                        let cur_bone = Bone::new(cur_parent.name.clone(), parent_name, inverse_bind_pose_parent);
-                        bones_stack.push(cur_bone);
-    
-                        cur_parent = &s.joints[parent_index];
-                    }
-    
-                    // cur_parent is in the bone
-                    // add the parents_bone successively
-                    while !bones_stack.is_empty() {
-                        let bone = bones_stack.pop().unwrap();
-                        skeleton.add(bone);
-                    }
-                } else {*/
+            /*if let Some(parent_name) = &parent_name {
+                // The bone has a parent
+                let bone = Bone::new(name, Some(parent_name.clone()), to_matrix4(&inverse_bind_pose));
+                // keep trace of the parent bone hierarchy
+                let mut bones_stack = vec![bone];
+                let mut cur_parent =  &s.joints[j.parent_index as usize];
+                while !skeleton.contains(&cur_parent.name) {
+                    let parent_index = cur_parent.parent_index as usize;
+                    let parent_name = if parent_index == 255 {
+                        None
+                    } else {
+                        let parent_j = &s.joints[parent_index];
+                        Some(parent_j.name.clone())
+                    };
+                    let inverse_bind_pose_parent = to_matrix4(&bind_data.inverse_bind_poses[parent_index]);
+                    let cur_bone = Bone::new(cur_parent.name.clone(), parent_name, inverse_bind_pose_parent);
+                    bones_stack.push(cur_bone);
 
-                //}
+                    cur_parent = &s.joints[parent_index];
+                }
+
+                // cur_parent is in the bone
+                // add the parents_bone successively
+                while !bones_stack.is_empty() {
+                    let bone = bones_stack.pop().unwrap();
+                    skeleton.add(bone);
+                }
+            } else {*/
+
+            //}
             } else {
                 None
             }
@@ -128,8 +130,7 @@ impl Skeleton {
             // By construction, the parent is already in the skeleton
             // Let's check that
             assert!(self.contains(parent_name_idx));
-            self.root.as_mut().unwrap()
-                .add(&bone);
+            self.root.as_mut().unwrap().add(&bone);
         } else {
             // Bone is the root
             // Make sure there is no root present
@@ -167,9 +168,7 @@ impl Skeleton {
     }
 }
 use na::Matrix4;
-#[derive(Debug, Clone)]
-#[derive(Serialize, Deserialize)]
-#[derive(PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Bone {
     // The name of the bone
     name_idx: usize,
@@ -188,14 +187,20 @@ pub struct Bone {
 }
 
 impl Bone {
-    fn new(name_idx: usize, parent_name_idx: Option<usize>, inverse_bind_pose: Matrix4<f32>, vertices_attached: bool, idx_transform: Option<usize>) -> Self {
+    fn new(
+        name_idx: usize,
+        parent_name_idx: Option<usize>,
+        inverse_bind_pose: Matrix4<f32>,
+        vertices_attached: bool,
+        idx_transform: Option<usize>,
+    ) -> Self {
         Bone {
             name_idx,
             parent_name_idx,
             children: None,
             inverse_bind_pose,
             vertices_attached,
-            idx_transform
+            idx_transform,
         }
     }
 
