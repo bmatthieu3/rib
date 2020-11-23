@@ -79,9 +79,7 @@ impl Animation {
 
             let start_time = *first_anim_j.sample_times.first().unwrap();
             let end_time = *first_anim_j.sample_times.last().unwrap();
-            let duration = end_time - start_time;
-
-            duration
+            end_time - start_time
         };
         //let final_transforms = Vec::with_capacity(bone_animations.len());
 

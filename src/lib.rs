@@ -93,10 +93,8 @@ pub fn load<'a, P: AsRef<Path> + std::fmt::Debug + 'a>(dirname: &'a P, fps: f32)
             } else {
                 return Err(Error::SkeletonNotEqual);
             }
-        } else {
-            if let Some(_) = &next.animations {
-                return Err(Error::SkeletonNotEqual);
-            }
+        } else if next.animations.is_some() {
+            return Err(Error::SkeletonNotEqual);
         }
     }
     // At this point, either:
@@ -244,7 +242,7 @@ pub fn write<P: AsRef<Path>>(data: &Data, path: P) -> Result<(), Error> {
     let mut buffer = BufWriter::new(File::create(path)?);
 
     let encoded: Vec<u8> = bincode::serialize(data)
-        .map_err(|e| Error::Serialize(e))?;
+        .map_err(Error::Serialize)?;
 
     buffer.write_all(&encoded)?;
     buffer.flush()?;
@@ -259,14 +257,14 @@ pub fn read<P: AsRef<Path>>(filename: P) -> Result<Data, Error> {
     f.read_to_end(&mut data)?;
 
     let decoded = bincode::deserialize(&data[..])
-        .map_err(|e| Error::Deserialize(e))?;
+        .map_err(Error::Deserialize)?;
 
     Ok(decoded)
 }
 use std::io::BufWriter;
 use std::fs::File;
 use std::io::Write;
-use bincode;
+
 use std::io::Read;
 
 #[cfg(test)]

@@ -42,7 +42,7 @@ impl Skeleton {
                         let mut idx_transform = None;
                         let inverse_bind_pose = if let Some(bind_data_joint_idx) = bind_data_joint_idx {
                             let inverse_bind_pose = bind_data.inverse_bind_poses[bind_data_joint_idx];
-                            prev_inv_bind_pose = inverse_bind_pose.clone();
+                            prev_inv_bind_pose = inverse_bind_pose;
                             vertices_attached = true;
                             idx_transform = Some(bind_data_joint_idx);
 
@@ -203,11 +203,9 @@ impl Bone {
             } else {
                 self.children = Some(vec![bone]);
             }
-        } else {
-            if let Some(children) = &mut self.children {
-                for child in children.iter_mut() {
-                    child.add(bone);
-                }
+        } else if let Some(children) = &mut self.children {
+            for child in children.iter_mut() {
+                child.add(bone);
             }
         }
     }
@@ -215,18 +213,16 @@ impl Bone {
     pub fn contains(&self, name_idx: usize) -> bool {
         if self.name_idx == name_idx {
             true
-        } else {
-            if let Some(children) = &self.children {
-                for child in children {
-                    if child.contains(name_idx) {
-                        return true;
-                    }
+        } else if let Some(children) = &self.children {
+            for child in children {
+                if child.contains(name_idx) {
+                    return true;
                 }
-
-                false
-            } else {
-                false
             }
+
+            false
+        } else {
+            false
         }
     }
 
