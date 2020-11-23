@@ -3,9 +3,14 @@ name = "rib"
 version = "0.1.0"
 authors = ["Matthieu Baumann <matthieu.baumann@astro.unistra.fr>"]
 edition = "2018"
+keywords = ["gamedev", "graphics", "rigging", "skinning", "animation"]
+description = "low level API for importing COLLADA files from Blender"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/bmatthieu3/rib"
+readme = "README.md"
 
 [dependencies]
-collada = { branch = "master", git = "https://github.com/bmatthieu3/piston_collada.git" }
+collada = { version = "0.13.0", branch = "master", git = "https://github.com/bmatthieu3/piston_collada.git" }
 nalgebra = {version = "0.23.1", features = ["serde-serialize"]}
 serde = { version = "*", features = ["derive"] }
 bincode = "1.3.1"
