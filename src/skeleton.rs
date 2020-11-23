@@ -6,6 +6,11 @@ pub struct Skeleton {
     root: Option<Bone>,
     joint_names: Vec<String>,
 }
+impl Default for Skeleton {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 use super::transform::to_matrix4;
 impl Skeleton {
@@ -36,7 +41,7 @@ impl Skeleton {
                         let bind_data_joint_idx = bind_data.joint_names.iter().position(|name| {
                             let aa = bind_data.skeleton_name.as_ref().unwrap().replace(" ", "_");
                             let bind_data_name = format!("{}_{}", aa, name);
-                            &bind_data_name == &joint.name
+                            bind_data_name == joint.name
                         });
                         let mut vertices_attached = false;
                         let mut idx_transform = None;

@@ -24,7 +24,7 @@ impl PartialEq for Keyframe {
 }
 
 impl Keyframe {
-    fn new(skeleton: &Skeleton, bone_animations: &Vec<collada::Animation>, start_time: f32, idx_keyframe: usize, alpha: f32) -> Self {
+    fn new(skeleton: &Skeleton, bone_animations: &[collada::Animation], start_time: f32, idx_keyframe: usize, alpha: f32) -> Self {
         let mut local_transforms = HashMap::with_capacity(bone_animations.len());
         let global_inverse_transform = Matrix4::identity();
 
