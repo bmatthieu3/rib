@@ -5,7 +5,6 @@ type Index = u32;
 type Weight = f32;
 type BoneIdx = i32;
 
-type Indices = Vec<u32>;
 use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize)]
 #[derive(PartialEq)]
@@ -20,5 +19,5 @@ pub struct Vertices {
     // The 2 bones that influences the vertices the much. Of size NVertices x 2
     pub bone_ids: Option<Vec<[BoneIdx; 2]>>,
 
-    pub indices: Indices,
+    pub indices: Vec<Index>,
 }

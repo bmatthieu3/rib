@@ -114,10 +114,8 @@ impl Animation {
             keys.push(keyframe);
 
             time += frame_time;
-            //frame_idx += 1;
         }
 
-        let bb = dbg!(idx_keyframe, duration);
         keys.push(Keyframe::new(
             skeleton,
             &bone_animations,
@@ -235,9 +233,9 @@ pub struct Animations {
 }
 
 use super::skeleton::{Bone, Skeleton};
-fn extract_anim_name_from_target(target: &str) -> &str {
+/*fn extract_anim_name_from_target(target: &str) -> &str {
     target.split('/').collect::<Vec<_>>()[1]
-}
+}*/
 
 impl Animations {
     pub fn new(name: &str, doc: &collada::document::ColladaDocument, frame_time: f32) -> Option<Self> {
@@ -245,10 +243,10 @@ impl Animations {
             if let Some(animations) = doc.get_animations() {
                 // If the skeleton and animations are defined, therefore there is a bind data associated to it
                 // We can unwrap to get this
-                let bind_data_set = doc.get_bind_data_set().unwrap();
+                /*let bind_data_set = doc.get_bind_data_set().unwrap();
                 let bind_data = bind_data_set.bind_data.first().unwrap();
 
-                /*let mut cur_name_anim = None;
+                let mut cur_name_anim = None;
                 let mut cur_targets_in_anim = vec![];
                 for anim in animations.into_iter() {
                     if let Some(cur_name) = cur_name_anim.to_owned() {

@@ -10,7 +10,6 @@ pub use vertices::Vertices;
 pub use animation::Animations;
 
 use na::{Point3, Vector3, Point2};
-use std::fs;
 use std::io;
 use std::path::Path;
 #[derive(Debug)]
@@ -284,20 +283,20 @@ mod tests {
         let model = super::load(&"./test/tube", 30.0).unwrap();
 
         super::write(&model, "./test/tube/tube.bin").unwrap();
-        let Data { animations, .. } = super::read(&"./test/tube/tube.bin").unwrap();
+        let Data { animations: _, .. } = super::read(&"./test/tube/tube.bin").unwrap();
     }
 
     #[test]
     fn human() {
         let model = super::load(&"./test/human", 30.0).unwrap();
         super::write(&model, "./test/human/human.bin").unwrap();
-        let Data { animations, .. } = super::read(&"./test/human/human.bin").unwrap();
+        let Data { animations: _, .. } = super::read(&"./test/human/human.bin").unwrap();
     }
 
     #[test]
     fn spider() {
         let model = super::load(&"./test/spider", 30.0).unwrap();
         super::write(&model, "./test/spider/spider.bin").unwrap();
-        let Data { animations, .. } = super::read(&"./test/spider/spider.bin").unwrap();
+        let Data { animations: _, .. } = super::read(&"./test/spider/spider.bin").unwrap();
     }
 }

@@ -8,7 +8,6 @@ pub struct Skeleton {
 }
 
 use super::transform::to_matrix4;
-use collada::document::ColladaDocument;
 impl Skeleton {
     pub fn new() -> Self {
         Skeleton {
@@ -163,7 +162,6 @@ impl Skeleton {
     }
 }
 use na::Matrix4;
-use std::rc::Weak;
 #[derive(Debug, Clone)]
 #[derive(Serialize, Deserialize)]
 #[derive(PartialEq)]

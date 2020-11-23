@@ -97,12 +97,12 @@ For the moment the 1. solution is handled by rib. The second solution may be imp
 
 ## Contributing instructions
 
-Post issues, PR if you want to participate and extend the projects, add some tests...
+Post issues, PR if you want to participate and develop the library.
 
-To run the test, simply
+To run the tests, simply
 
 ```bash
 cargo test
 ```
 
-at the root of the project
+in the root of the repository.
