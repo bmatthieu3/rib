@@ -36,12 +36,6 @@ impl Keyframe {
             ..
         } in bone_animations.iter()
         {
-            //let aa = dbg!(sample_poses.len());
-
-            // Skip bones that are not referred by bind_data
-            // These are bones for which no vertices is bound to
-            // So we can ignore them
-            // 1. Get the bone name focused by the current animation
             let bone_name = target.split('/').collect::<Vec<_>>();
             let bone_name = bone_name[0];
 
@@ -110,8 +104,8 @@ impl Animation {
                 idx_keyframe += 1;
                 end_time_keyframe = bone_animations[0].sample_times[idx_keyframe];
             }
-            let d0 = dbg!(first_bone_animation.sample_times[idx_keyframe - 1]);
-            let d1 = dbg!(first_bone_animation.sample_times[idx_keyframe]);
+            let d0 = first_bone_animation.sample_times[idx_keyframe - 1];
+            let d1 = first_bone_animation.sample_times[idx_keyframe];
             let dur_keyframe = d1 - d0;
             let alpha = if dur_keyframe > 0.0 {
                 (time - d0) / dur_keyframe
@@ -206,7 +200,7 @@ fn compute_final_transforms(
         skeleton,
         &root,
         &Matrix4::identity(),
-        dbg!(bone_local_transforms),
+        bone_local_transforms,
         global_inverse_transform,
         &mut transforms,
     );
@@ -297,7 +291,7 @@ impl Animations {
                     anims.insert(cur_name, res);
                 }
                 */
-                let anim = Animation::new(&skeleton, dbg!(animations), frame_time);
+                let anim = Animation::new(&skeleton, animations, frame_time);
                 let mut anims = HashMap::new();
                 anims.insert(name.to_string(), anim);
 

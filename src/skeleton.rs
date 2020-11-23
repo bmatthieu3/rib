@@ -56,20 +56,7 @@ impl Skeleton {
                                 inverse_bind_pose
                             } else {
                                 prev_inv_bind_pose
-                                //Matrix4::identity().into()
                             };
-                        /*let bind_data_name = format!("{}_{}", bind_data.skeleton_name.as_ref().unwrap(), bind_data.joint_names[bind_joint_idx]);
-                        let bind_data_name = dbg!(bind_data_name.replace(" ", "_"));
-                        let inverse_bind_pose = if joint.name == bind_data_name {
-                            let inverse_bind_pose = bind_data.inverse_bind_poses[bind_joint_idx];
-                            prev_inv_bind_pose = inverse_bind_pose.clone();
-
-                            bind_joint_idx += 1;
-                            inverse_bind_pose
-                        } else {
-                            prev_inv_bind_pose
-                            //Matrix4::identity().into()
-                        };*/
 
                         let bone = Bone::new(
                             joint_idx,
