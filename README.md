@@ -78,7 +78,7 @@ void main() {
 }
 ```
 
-## How can I use it
+## How can I use it?
 
 Some little adjustements of the .blend must be done:
 1. Limit the maximum number of bones influencing each vertex to 2! (reduce from 4 to 2)
