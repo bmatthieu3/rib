@@ -26,7 +26,6 @@ impl Skeleton {
                 if let Some(bind_data_set) = &doc.get_bind_data_set() {
                     let bind_data = &bind_data_set.bind_data[0];
                     let mut s = Skeleton::new();
-                    //println!("skeleton joints {} bind data {}", skeleton.joints.len(), bind_data.joint_names.len());
 
                     let mut prev_inv_bind_pose = Matrix4::identity().into();
                     for (joint_idx, joint) in skeleton.joints.iter().enumerate() {
