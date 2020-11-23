@@ -87,8 +87,8 @@ Some little adjustements of the .blend must be done:
 3. Select the mesh you want to export with its skeleton attached
 3. Export to collada file (.dae)
     1. In the **Main** tab. OpenGL's up vector is the Y axis but blender's one is Z. Check the apply box with X as the forward axis and Y as the up axis.
-    
     ![change up axis](https://github.com/bmatthieu3/rib/blob/master/misc/main.png)
+    
     2. In **Geom** tab, check the Triangulate box.
     
     ![enable triangulation](https://github.com/bmatthieu3/rib/blob/master/misc/geom.png)
