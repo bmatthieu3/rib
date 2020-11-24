@@ -16,7 +16,9 @@ rib offers **read** and **write** methods that use [bincode]() for (de)serializi
 
 Here is an example of a [human low-poly](https://opengameart.org/content/animated-human-low-poly) model found on the very good opengameart.org game resources archive:
 
-https://youtu.be/9Xwf7G9upOY
+[![Alt text](https://img.youtube.com/vi/9Xwf7G9upOY/0.jpg)](https://youtu.be/9Xwf7G9upOY)
+
+
 
 This is animated using rib:
 - The vertices are sent to the GPU as vertex attribute at the beginning of the program.
